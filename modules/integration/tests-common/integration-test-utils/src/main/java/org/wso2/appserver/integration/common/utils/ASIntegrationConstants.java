@@ -20,4 +20,6 @@ package org.wso2.appserver.integration.common.utils;
 public class ASIntegrationConstants {
     public static final String JAGGERY_APPLICATION = "jaggery";
     public static final String WEB_APPLICATION = "webapps";
+    public static final String H2DB_DB_URL = "/repository/database/WSO2CARBON_DB";
+    public static final String MYSQL_DB_URL = "jdbc:mysql://localhost:3306/userstore?autoReconnect=true";
 }
