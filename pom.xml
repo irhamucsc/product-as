@@ -100,10 +100,10 @@
                 <artifactId>hibernate</artifactId>
                 <version>${hibernate.version}</version>
             </dependency>
-	    <dependency>
-            	<groupId>net.sf.ehcache.wso2</groupId>
-            	<artifactId>ehcache</artifactId>
-            	<version>${ehcache.version}</version>
+            <dependency>
+                <groupId>net.sf.ehcache.wso2</groupId>
+                <artifactId>ehcache</artifactId>
+                <version>${ehcache.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.bcel.wso2</groupId>
@@ -302,6 +302,18 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
+                <groupId>org.wso2.carbon</groupId>
+                <artifactId>org.wso2.carbon.registry.resource.stub</artifactId>
+                <version>${stub.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon</groupId>
+                <artifactId>org.wso2.carbon.registry.info.stub</artifactId>
+                <version>${stub.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.wso2.appserver</groupId>
                 <artifactId>org.wso2.appserver.integration.common.clients</artifactId>
                 <version>${product.as.version}</version>
@@ -315,7 +327,7 @@
             <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>SecVerifier</artifactId>
-                <version>${carbon.platform.version}</version>
+                <version>4.3.0</version>
                 <scope>test</scope>
                 <type>aar</type>
             </dependency>
@@ -406,7 +418,7 @@
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.logging.view.stub</artifactId>
                 <version>${carbon.platform.version}</version>
-                <scope>test</scope>
+                <scope>compile</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -507,7 +519,7 @@
 
         <stub.version>4.3.0-SNAPSHOT</stub.version>
         <jaggery.version>0.9.0-SNAPSHOT</jaggery.version>
-        <test.framework.version>4.3.1</test.framework.version>
+        <test.framework.version>4.3.2-SNAPSHOT</test.framework.version>
         <xfer.version>3.3.0</xfer.version>
         <operadriver.version>0.8.1</operadriver.version>
         <selenium.version>2.40.0</selenium.version>
