@@ -201,7 +201,7 @@ public class CarbonServerBasicOperationTestCase extends ASIntegrationTest {
         boolean isJarCreated = false;
         Process process = null;
         try {
-            process = CarbonCommandToolsUtil.runScript(carbonHome + "/bin",
+            process = CarbonCommandToolsUtil.runScript(carbonHome + "bin",
                                                        new String[]{"ant", "localize"});
             File folder = new File(carbonHome + File.separator + "repository" + File.separator +
                                    "components" + File.separator + "dropins");
