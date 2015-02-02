@@ -20,6 +20,7 @@ package org.wso2.appserver.integration.tests.carbontools;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.testng.SkipException;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.appserver.integration.common.utils.ASIntegrationTest;
@@ -61,9 +62,7 @@ public class CarbonServerBasicOperationTestCase extends ASIntegrationTest {
         Process process;
         boolean startupStatus = false;
         if (CarbonCommandToolsUtil.isCurrentOSWindows()) {
-            cmdArrayToStart = new String[]
-                    {"cmd", "/c", "wso2server.bat", "--start", "-DportOffset=" + portOffset};
-            process = CarbonCommandToolsUtil.runScript(carbonHome + File.separator + "bin", cmdArrayToStart);
+            throw new SkipException("Feature --start is not available for windows");
         } else {
             cmdArrayToStart = new String[]
                     {"sh", "wso2server.sh", "--start", "-DportOffset=" + portOffset};
@@ -128,9 +127,7 @@ public class CarbonServerBasicOperationTestCase extends ASIntegrationTest {
     public void testRestartCommand() throws Exception {
         String[] cmdArrayToReStart;
         if (CarbonCommandToolsUtil.isCurrentOSWindows()) {
-            cmdArrayToReStart = new String[]
-                    {"cmd.exe", "/c", "wso2server.bat", "--restart", "-DportOffset=" + portOffset};
-            CarbonCommandToolsUtil.runScript(carbonHome + File.separator + "bin", cmdArrayToReStart);
+            throw new SkipException("Feature --restart is not available for windows");
         } else {
             cmdArrayToReStart = new String[]
                     {"sh", "wso2server.sh", "--restart", "-DportOffset=" + portOffset};
@@ -152,8 +149,7 @@ public class CarbonServerBasicOperationTestCase extends ASIntegrationTest {
         Process process = null;
         try {
             if (CarbonCommandToolsUtil.isCurrentOSWindows()) {
-                cmdArray = new String[]{"cmd.exe", "/c", "wso2server.bat", "--stop", "-DportOffset=" + portOffset};
-                process = CarbonCommandToolsUtil.runScript(carbonHome + File.separator + "bin", cmdArray);
+                throw new SkipException("Feature --stop is not available for windows");
             } else {
                 cmdArray = new String[]{"sh", "wso2server.sh", "--stop", "-DportOffset=" + portOffset};
                 process = CarbonCommandToolsUtil.runScript(carbonHome + "/bin", cmdArray);
@@ -168,65 +164,6 @@ public class CarbonServerBasicOperationTestCase extends ASIntegrationTest {
         assertTrue(startupStatus, "Unsuccessful login");
     }
 
-    @Test(groups = {"wso2.as"}, description = "Server restart test",
-          dependsOnMethods = {"testStopCommand"})
-    public void testBuildXMLGenerateRemoteRegistryClients() throws Exception {
-        boolean isJarCreated = false;
-        Process process = null;
-        try {
 
-            File folder = new File(carbonHome + File.separator + "repository" + File.separator + "lib");
-            File[] listOfFilesBeforeRunAntCommand = folder.listFiles();
-            process = CarbonCommandToolsUtil.runScript(carbonHome + "/bin", new String[]{"ant"});
-            long startTime = System.currentTimeMillis();
-            long timeout = 2000;
-            while ((System.currentTimeMillis() - startTime) < timeout) {
-                File[] listOfFilesAfterRunAntCommand = folder.listFiles();
-                if (listOfFilesAfterRunAntCommand.length > listOfFilesBeforeRunAntCommand.length) {
-                    isJarCreated = true;
-                    break;
-                }
-            }
-        }finally {
-            if (process != null) {
-                process.destroy();
-            }
-        }
-        assertTrue(isJarCreated, "Jar not created successfully");
-    }
-
-    @Test(groups = {"wso2.as"}, description = "Server restart test",
-          dependsOnMethods = {"testBuildXMLGenerateRemoteRegistryClients"})
-    public void testBuildXMLGenerateLanguageBundle() throws Exception {
-        boolean isJarCreated = false;
-        Process process = null;
-        try {
-            process = CarbonCommandToolsUtil.runScript(carbonHome + "bin",
-                                                       new String[]{"ant", "localize"});
-            File folder = new File(carbonHome + File.separator + "repository" + File.separator +
-                                   "components" + File.separator + "dropins");
-            long startTime = System.currentTimeMillis();
-            long timeout = 2000;
-            while ((System.currentTimeMillis() - startTime) < timeout) {
-                if (folder.exists() && folder.isDirectory()) {
-                    File[] listOfFiles = folder.listFiles();
-                    for (File file : listOfFiles) {//Check rep lib as well
-                        if (file.getName().contains("languageBundle") && file.getName().contains("jar")) {
-                            isJarCreated = true;
-                            break;
-                        }
-                    }
-                    if (isJarCreated) {
-                        break;
-                    }
-                }
-            }
-        } finally {
-            if (process != null) {
-                process.destroy();
-            }
-        }
-        assertTrue(isJarCreated, "Jar not created successfully");
-    }
 
 }

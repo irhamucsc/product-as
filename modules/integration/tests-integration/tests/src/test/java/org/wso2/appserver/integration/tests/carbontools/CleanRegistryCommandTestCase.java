@@ -9,6 +9,7 @@ import org.testng.annotations.Test;
 import org.wso2.appserver.integration.common.clients.ResourceAdminServiceClient;
 import org.wso2.appserver.integration.common.utils.ASIntegrationTest;
 import org.wso2.appserver.integration.common.utils.CarbonCommandToolsUtil;
+import org.wso2.appserver.integration.tests.carbontools.utils.CarbonToolsUtil;
 import org.wso2.carbon.authenticator.stub.LoginAuthenticationExceptionException;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.ContextXpathConstants;
@@ -45,6 +46,7 @@ public class CleanRegistryCommandTestCase extends ASIntegrationTest {
     String backendURLForInstance002;
     LoginLogoutClient loginLogoutClientForInstance002;
     private int portOffset = 1;
+    private Process process = null;
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
@@ -66,7 +68,7 @@ public class CleanRegistryCommandTestCase extends ASIntegrationTest {
     @Test(groups = "wso2.greg", description = "Add resource")
     public void testCleanResource() throws Exception {
         boolean isResourceFound;
-        Process process = null;
+
         String resourcePath = FrameworkPathUtil.getSystemResourceLocation() + "artifacts" +
                               File.separator + "AS" + File.separator + "carbontools" +
                               File.separator + "resource.txt";
@@ -78,7 +80,7 @@ public class CleanRegistryCommandTestCase extends ASIntegrationTest {
         try {
             if (CarbonCommandToolsUtil.isCurrentOSWindows()) {
                 cmdArrayToCleanRegistry = new String[]
-                        {"cmd.exe", "/c", "wso2server.bat", "-DportOffset=1", "--cleanRegistry"};
+                        {"cmd.exe", "/c", "wso2server.bat", "--cleanRegistry","-DportOffset=1"};
 
                 process = CarbonCommandToolsUtil.runScript(
                         carbonHome + File.separator + "bin", cmdArrayToCleanRegistry);
@@ -116,27 +118,15 @@ public class CleanRegistryCommandTestCase extends ASIntegrationTest {
 
     @AfterClass(alwaysRun = true)
     public void cleanResources() throws Exception {
-        Process shutDownProcess = null;
-        String[] cmdArrayToShutdown;
-        try {
-            if (CarbonCommandToolsUtil.isCurrentOSWindows()) {
-                cmdArrayToShutdown =
-                        new String[]{"cmd.exe", "/c", "wso2server.bat", "-DportOffset=1", "--stop"};
-                shutDownProcess =
-                        CarbonCommandToolsUtil.runScript(carbonHome + File.separator + "bin", cmdArrayToShutdown);
-            } else {
-                cmdArrayToShutdown = new String[]{"sh", "wso2server.sh", "-DportOffset=1", "--stop"};
-                shutDownProcess = CarbonCommandToolsUtil.runScript(carbonHome + "/bin", cmdArrayToShutdown);
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                try {
+                    CarbonToolsUtil.serverShutdown(process, 1, context);
+                } catch (Exception e) {
+                    log.error("Error while server shutdown ..", e);
+                }
             }
-            boolean shutDownStatus = CarbonCommandToolsUtil.isServerDown(context, portOffset);
-            log.info("Server shutdown status : " + shutDownStatus);
-
-        } finally {
-            if (shutDownProcess != null) {
-                shutDownProcess.destroy();
-            }
-
-        }
+        });
     }
 
 }
