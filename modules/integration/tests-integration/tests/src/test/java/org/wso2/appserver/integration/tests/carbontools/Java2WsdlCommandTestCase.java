@@ -82,7 +82,7 @@ public class Java2WsdlCommandTestCase extends ASIntegrationTest {
         String commandDirectory;
         if (CarbonCommandToolsUtil.isCurrentOSWindows()) {
             cmdArrayToWsdl2Java =
-                    new String[]{"cmd.exe", "/c", "java2wsdl.bat", "-cn", "testjava2wsdl.Java2Wsdl"};
+                    new String[]{"cmd.exe", "/c", "start", "java2wsdl.bat", "-cn", "testjava2wsdl.Java2Wsdl"};
             commandDirectory = System.getProperty(ServerConstants.CARBON_HOME) + File.separator + "bin";
         } else {
             cmdArrayToWsdl2Java = new String[]{"sh", "java2wsdl.sh", "-cn", "testjava2wsdl.Java2Wsdl"};

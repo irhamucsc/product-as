@@ -80,7 +80,7 @@ public class CleanRegistryCommandTestCase extends ASIntegrationTest {
         try {
             if (CarbonCommandToolsUtil.isCurrentOSWindows()) {
                 cmdArrayToCleanRegistry = new String[]
-                        {"cmd.exe", "/c", "wso2server.bat", "--cleanRegistry","-DportOffset=1"};
+                        {"cmd.exe", "/c", "start", "wso2server.bat", "--cleanRegistry", "-DportOffset=1"};
 
                 process = CarbonCommandToolsUtil.runScript(
                         carbonHome + File.separator + "bin", cmdArrayToCleanRegistry);

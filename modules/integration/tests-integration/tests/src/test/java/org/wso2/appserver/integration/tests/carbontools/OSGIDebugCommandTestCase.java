@@ -14,8 +14,11 @@ import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.ContextXpathConstants;
 
 import javax.xml.xpath.XPathExpressionException;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 /**
  * This class is to test -DosgiDebugOptions
@@ -27,6 +30,7 @@ public class OSGIDebugCommandTestCase extends ASIntegrationTest {
     AutomationContext context;
     String commandDirectory;
     private int portOffset = 1;
+    Process process = null;
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
@@ -41,6 +45,13 @@ public class OSGIDebugCommandTestCase extends ASIntegrationTest {
             throws IOException, InterruptedException, XPathExpressionException,
                    LoginAuthenticationExceptionException {
         String[] cmdArray;
+        String expectedString = "OSGi debugging has been enabled with options:";
+        boolean isFoundTheMessage = false;
+        InputStream is = null;
+        InputStreamReader isr = null;
+        int timeout = 60;
+
+        BufferedReader br = null;
         if (CarbonCommandToolsUtil.isCurrentOSWindows()) {
             cmdArray = new String[]
                     {"cmd.exe", "/c", "wso2server.bat", "-DosgiDebugOptions", "-DportOffset=1"};
@@ -50,35 +61,52 @@ public class OSGIDebugCommandTestCase extends ASIntegrationTest {
                     {"sh", "wso2server.sh", "-DosgiDebugOptions", "-DportOffset=1"};
             commandDirectory = CarbonToolsUtil.getCarbonHome(context) + "/bin";
         }
-
-        boolean isDebug = CarbonCommandToolsUtil.
-                isScriptRunSuccessfully(commandDirectory, cmdArray,
-                                        "OSGi debugging has been enabled with options:");
-
+        try {
+            process = CarbonCommandToolsUtil.runScript(commandDirectory, cmdArray);
+            String line;
+            long startTime = System.currentTimeMillis();
+            while ((System.currentTimeMillis() - startTime) < timeout) {
+                is = process.getInputStream();
+                isr = new InputStreamReader(is);
+                br = new BufferedReader(isr);
+                if (br != null) {
+                    line = br.readLine();
+                    if (line.contains(expectedString)) {
+                        log.info("found the string " + expectedString + " in line " + line);
+                        isFoundTheMessage = true;
+                        break;
+                    }
+                }
+            }
+        } finally {
+            if (is != null) {
+                is.close();
+            }
+            if (isr != null) {
+                isr.close();
+            }
+            if (br != null) {
+                br.close();
+            }
+            if (process != null) {
+                process.destroy();
+            }
+        }
         CarbonCommandToolsUtil.isServerStartedUp(context, portOffset);
-        Assert.assertTrue(isDebug, "Java file not created successfully");
+        Assert.assertTrue(isFoundTheMessage, "Java file not created successfully");
     }
 
     @AfterClass(alwaysRun = true)
     public void cleanResources() throws Exception {
-        Process shutDownProcess = null;
-        String[] cmdArrayToShutdown;
-
-        try {
-            if (CarbonCommandToolsUtil.isCurrentOSWindows()) {
-                cmdArrayToShutdown = new String[]
-                        {"cmd.exe", "/c", "wso2server.bat", "-DportOffset=1", "--stop"};
-            } else {
-                cmdArrayToShutdown = new String[]{"sh", "wso2server.sh", "-DportOffset=1", "--stop"};
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                try {
+                    CarbonToolsUtil.serverShutdown(process, 1, context);
+                } catch (Exception e) {
+                    log.error("Error while server shutdown ..", e);
+                }
             }
-            shutDownProcess = CarbonCommandToolsUtil.runScript(commandDirectory, cmdArrayToShutdown);
-            boolean shutDownStatus = CarbonCommandToolsUtil.isServerDown(context, portOffset);
-            log.info("Server shutdown status : " + shutDownStatus);
-        } finally {
-            if (shutDownProcess != null) {
-                shutDownProcess.destroy();
-            }
-        }
+        });
     }
 
 }

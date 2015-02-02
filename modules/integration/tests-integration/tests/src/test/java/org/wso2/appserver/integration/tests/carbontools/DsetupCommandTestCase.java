@@ -69,11 +69,11 @@ public class DsetupCommandTestCase extends ASIntegrationTest {
             String[] cmdArrayToDsetup;
             if (CarbonCommandToolsUtil.isCurrentOSWindows()) {
                 cmdArrayToDsetup =
-                        new String[]{"cmd.exe", "/c", "wso2server.bat","-Dsetup", "-DportOffset=1" };
+                        new String[]{"cmd.exe", "/c", "start", "wso2server.bat", "-Dsetup", "-DportOffset=1"};
             } else {
-                cmdArrayToDsetup = new String[]{"sh", "wso2server.sh","-Dsetup", "-DportOffset=1"};
+                cmdArrayToDsetup = new String[]{"sh", "wso2server.sh", "-Dsetup", "-DportOffset=1"};
             }
-            process = CarbonCommandToolsUtil.runScript(testServerManager.getCarbonHome()+"/bin", cmdArrayToDsetup);
+            process = CarbonCommandToolsUtil.runScript(testServerManager.getCarbonHome() + "/bin", cmdArrayToDsetup);
             boolean startupStatus = CarbonCommandToolsUtil.isServerStartedUp(context, portOffset);
             log.info("Server startup status : " + startupStatus);
 
