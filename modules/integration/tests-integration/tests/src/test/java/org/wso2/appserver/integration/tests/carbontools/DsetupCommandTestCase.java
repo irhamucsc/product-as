@@ -90,14 +90,6 @@ public class DsetupCommandTestCase extends ASIntegrationTest {
 
     @AfterClass(alwaysRun = true)
     public void cleanResources() throws Exception {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                try {
                     CarbonToolsUtil.serverShutdown(process, 1, context);
-                } catch (Exception e) {
-                    log.error("Error while server shutdown ..", e);
-                }
-            }
-        });
     }
 }

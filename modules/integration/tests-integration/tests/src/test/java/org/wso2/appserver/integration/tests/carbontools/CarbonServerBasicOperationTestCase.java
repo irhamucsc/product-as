@@ -21,6 +21,7 @@ package org.wso2.appserver.integration.tests.carbontools;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.testng.SkipException;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.appserver.integration.common.utils.ASIntegrationTest;
@@ -28,6 +29,7 @@ import org.wso2.appserver.integration.common.utils.CarbonCommandToolsUtil;
 import org.wso2.appserver.integration.tests.carbontools.utils.CarbonToolsUtil;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.ContextXpathConstants;
+import org.wso2.carbon.utils.ServerConstants;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -46,6 +48,7 @@ public class CarbonServerBasicOperationTestCase extends ASIntegrationTest {
     private AutomationContext context;
     private final int portOffset = 1;
     private String processId;
+    Process processStop = null;
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
@@ -83,9 +86,9 @@ public class CarbonServerBasicOperationTestCase extends ASIntegrationTest {
         Process processDump;
         boolean isFoundDumpFolder = false;
         if (CarbonCommandToolsUtil.isCurrentOSWindows()) {
-            cmdArray = new String[]
-                    {"cmd.exe", "/c", "carbondump.bat", "-carbonHome", carbonHome, "-pid", processId};
-            processDump = CarbonCommandToolsUtil.runScript(carbonHome + File.separator + "bin", cmdArray);
+            cmdArray = new String[]{"cmd.exe", "/c", "carbondump.bat", "-carbonHome",
+                                    System.getProperty(ServerConstants.CARBON_HOME), "-pid", processId};
+            processDump = CarbonCommandToolsUtil.runScript(System.getProperty(ServerConstants.CARBON_HOME) + File.separator + "bin", cmdArray);
         } else {
             cmdArray = new String[]
                     {"sh", "carbondump.sh", "-carbonHome", carbonHome, "-pid", processId};
@@ -146,24 +149,33 @@ public class CarbonServerBasicOperationTestCase extends ASIntegrationTest {
     public void testStopCommand() throws Exception {
         String[] cmdArray;
         boolean startupStatus = false;
-        Process process = null;
         try {
             if (CarbonCommandToolsUtil.isCurrentOSWindows()) {
                 throw new SkipException("Feature --stop is not available for windows");
             } else {
                 cmdArray = new String[]{"sh", "wso2server.sh", "--stop", "-DportOffset=" + portOffset};
-                process = CarbonCommandToolsUtil.runScript(carbonHome + "/bin", cmdArray);
+                processStop = CarbonCommandToolsUtil.runScript(carbonHome + "/bin", cmdArray);
             }
-
             startupStatus = CarbonCommandToolsUtil.isServerDown(context, portOffset);
         } finally {
-            if (process != null) {
-                process.destroy();
+            if (processStop != null) {
+                processStop.destroy();
             }
         }
         assertTrue(startupStatus, "Unsuccessful login");
     }
 
-
+    @AfterClass(alwaysRun = true)
+    public void cleanResources() throws Exception {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                try {
+                    CarbonToolsUtil.serverShutdown(processStop, 1, context);
+                } catch (Exception e) {
+                    log.error("Error while server shutdown ..", e);
+                }
+            }
+        });
+    }
 
 }

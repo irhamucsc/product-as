@@ -20,6 +20,9 @@
 
 package org.wso2.appserver.integration.tests.carbontools.utils;
 
+import com.sun.jna.Pointer;
+import com.sun.jna.platform.win32.Kernel32;
+import com.sun.jna.platform.win32.WinNT;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.automation.engine.FrameworkConstants;
@@ -31,6 +34,7 @@ import org.wso2.carbon.integration.common.extensions.utils.ServerLogReader;
 import org.wso2.carbon.integration.common.utils.ClientConnectionUtil;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 
 /**
  * This class has the utility methods to carbon tools test cases.
@@ -88,5 +92,25 @@ public class CarbonToolsUtil {
                 process.destroy();
             }
         }
+    }
+
+    private int getWindowsProcessId(Process proc) {
+        if (proc.getClass().getName().equals("java.lang.Win32Process")
+            || proc.getClass().getName().equals("java.lang.ProcessImpl")) {
+    /* determine the pid on windows plattforms */
+            try {
+                Field f = proc.getClass().getDeclaredField("handle");
+                f.setAccessible(true);
+                long handler = f.getLong(proc);
+                Kernel32 kernel = Kernel32.INSTANCE;
+                WinNT.HANDLE handle = new WinNT.HANDLE();
+                handle.setPointer(Pointer.createConstant(handler));
+                return kernel.GetProcessId(handle);
+
+            } catch (Throwable e) {
+                log.error(e.getMessage());
+            }
+        }
+        return 0;
     }
 }

@@ -89,9 +89,10 @@ public class OSGICommandDosgiConsoleTestCase extends ASIntegrationTest {
         BufferedReader inBuff = new BufferedReader(new InputStreamReader(in, "UTF-8"));
         String inputLine;
         while ((inputLine = inBuff.readLine()) != null) {
-            if (inputLine.contains("Active")) {  // filtering Unsatisfied components
+            if (inputLine.contains("Active")) {  // filtering active components
                 arrList.add(inputLine);
                 log.info(inputLine);
+                break;
             }
         }
         inBuff.close();

@@ -114,13 +114,13 @@ public class CarbonCommandToolsUtil {
     /**
      * This method to find multiple strings in same line in log
      *
-     * @param backEndUrl - server back end url
+     * @param backEndUrl        - server back end url
      * @param stringArrayToFind
-     * @param cookie - cookie
+     * @param cookie            - cookie
      * @return -  if found all the  string in one line: true else false
-     * @throws RemoteException - Error when initializing the log
+     * @throws RemoteException             - Error when initializing the log
      * @throws LogViewerLogViewerException - Error while reading the log
-     * @throws InterruptedException - Error occurred when thread sleep
+     * @throws InterruptedException        - Error occurred when thread sleep
      */
     public static boolean findMultipleStringsInLog(String backEndUrl, String[] stringArrayToFind,
                                                    String cookie)
@@ -185,7 +185,8 @@ public class CarbonCommandToolsUtil {
      * @param automationContext - AutomationContext
      * @return true: If server is down else false
      */
-    public static synchronized boolean isServerDown(AutomationContext automationContext,int portOffset)
+    public static synchronized boolean isServerDown(AutomationContext automationContext,
+                                                    int portOffset)
             throws XPathExpressionException {
         boolean isServerShutDown = false;
         try {
@@ -196,7 +197,7 @@ public class CarbonCommandToolsUtil {
                         Integer.parseInt(FrameworkConstants.SERVER_DEFAULT_HTTPS_PORT) + portOffset,
                         10, false, automationContext.getInstance().getHosts().get("default"));
             }
-        }catch (RuntimeException ex){
+        } catch (RuntimeException ex) {
             log.info("Server has shutdown successfully");//Getting this when sever shutdown
             isServerShutDown = true;
         }
@@ -227,11 +228,11 @@ public class CarbonCommandToolsUtil {
      *
      * @return if current os is windows return true : else false
      */
-    public static boolean isCurrentOSWindows(){
+    public static boolean isCurrentOSWindows() {
         if (System.getProperty("os.name").toLowerCase().contains("windows")) {
             return true;
-        }else{
-            return false;
         }
+        return false;
+
     }
 }
