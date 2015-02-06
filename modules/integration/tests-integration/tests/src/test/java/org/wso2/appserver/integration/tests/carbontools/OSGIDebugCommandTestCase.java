@@ -49,7 +49,7 @@ public class OSGIDebugCommandTestCase extends ASIntegrationTest {
         boolean isFoundTheMessage = false;
         InputStream is = null;
         InputStreamReader isr = null;
-        int timeout = 60;
+        int timeout = 30000;
 
         BufferedReader br = null;
         if (CarbonCommandToolsUtil.isCurrentOSWindows()) {
