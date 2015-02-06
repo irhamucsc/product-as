@@ -11,9 +11,13 @@ import org.wso2.appserver.integration.common.utils.CarbonCommandToolsUtil;
 import org.wso2.appserver.integration.tests.carbontools.utils.CarbonToolsUtil;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.ContextXpathConstants;
-import org.wso2.carbon.automation.extensions.servers.carbonserver.TestServerManager;
+import org.wso2.carbon.automation.test.utils.common.TestConfigurationProvider;
 import org.wso2.carbon.integration.common.admin.client.AuthenticatorClient;
-import org.wso2.carbon.integration.common.extensions.usermgt.UserPopulator;
+import org.wso2.carbon.integration.common.utils.mgt.ServerConfigurationManager;
+
+import java.io.File;
+
+import static org.testng.Assert.assertTrue;
 
 
 /**
@@ -21,73 +25,68 @@ import org.wso2.carbon.integration.common.extensions.usermgt.UserPopulator;
  */
 public class DsetupCommandTestCase extends ASIntegrationTest {
 
-    private static final Log log = LogFactory.getLog(ChangeUserPasswordH2DBTestCase.class);
-    private TestServerManager testServerManager;
-    private AutomationContext context;
+    private static final Log log = LogFactory.getLog(DsetupCommandTestCase.class);
     private AuthenticatorClient authenticatorClient;
-    Process process;
-    String loginStatusString;
-    boolean loginStatus = false;
+    private ServerConfigurationManager serverManager;
+
+    private String carbonHome = null;
+    private AutomationContext context = null;
     private int portOffset = 1;
+    private Process process = null;
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
 
-        context = new AutomationContext("AS", "appServerInstance0002", ContextXpathConstants.SUPER_TENANT,
+        context = new AutomationContext("AS", "appServerInstance0002",
+                                        ContextXpathConstants.SUPER_TENANT,
                                         ContextXpathConstants.ADMIN);
 
         authenticatorClient = new AuthenticatorClient(context.getContextUrls().getBackEndUrl());
-        testServerManager = new TestServerManager(context, 1) {
-            public void configureServer() throws Exception {
-//                testServerManager.startServer();
-//                UserPopulator userPopulator = new UserPopulator("AS", "appServerInstance0002");
-//                userPopulator.populateUsers();
-//
-//                loginStatusString = authenticatorClient.login("testu1", "testu1pass", context.getInstance().
-//                        getHosts().get("default"));
-//                log.info("Login status : " + loginStatusString.contains("JSESSIONID"));
-//                testServerManager.stopServer();
-            }
-        };
+        carbonHome = CarbonToolsUtil.getCarbonHome(context);
+        log.info("replacing the master-datasources.xml file");
+        File sourceFile =
+                new File(TestConfigurationProvider.getResourceLocation() + File.separator +
+                         "artifacts" + File.separator + "AS" + File.separator + "carbontools" +
+                         File.separator + "master-datasources.xml");
+
+        File targetFile =
+                new File(carbonHome + File.separator + "repository" +
+                         File.separator + "conf" + File.separator + "datasources" + File.separator +
+                         "master-datasources.xml");
+        serverManager = new ServerConfigurationManager(context);
+        serverManager.applyConfigurationWithoutRestart(sourceFile, targetFile, true);
+
 
     }
 
-    @Test(groups = "wso2.as", description = "User login test")
-    public void testLoginStatus() throws Exception {
-        testServerManager.startServer();
-        UserPopulator userPopulator = new UserPopulator("AS", "appServerInstance0002");
-        userPopulator.populateUsers();
-        loginStatusString = authenticatorClient.login("testu1", "testu1pass", context.getInstance().
-                getHosts().get("default"));
-        log.info("Login status : " + loginStatusString.contains("JSESSIONID"));
-        testServerManager.stopServer();
-    }
+    @Test(groups = "wso2.greg", description = "Add resource")
+    public void testCleanResource() throws Exception {
 
-    @Test(groups = "wso2.as", description = "User login test", dependsOnMethods = {"testLoginStatus"})
-    public void testDsetupCommand() throws Exception {
-        try {
-            String[] cmdArrayToDsetup;
-            if (CarbonCommandToolsUtil.isCurrentOSWindows()) {
-                cmdArrayToDsetup =
-                        new String[]{"cmd.exe", "/c", "start", "wso2server.bat", "-Dsetup", "-DportOffset=1"};
-            } else {
-                cmdArrayToDsetup = new String[]{"sh", "wso2server.sh", "-Dsetup", "-DportOffset=1"};
-            }
-            process = CarbonCommandToolsUtil.runScript(testServerManager.getCarbonHome() + "/bin", cmdArrayToDsetup);
-            boolean startupStatus = CarbonCommandToolsUtil.isServerStartedUp(context, portOffset);
-            log.info("Server startup status : " + startupStatus);
+        String[] cmdArrayToRecreateDB;
+        if (CarbonCommandToolsUtil.isCurrentOSWindows()) {
+            cmdArrayToRecreateDB = new String[]
+                    {"cmd.exe", "/c", "start", "wso2server.bat", "-Dsetup", "-DportOffset=" + portOffset};
 
-            loginStatusString = authenticatorClient.login("testu1", "testu1pass", context.getInstance().
-                    getHosts().get("default"));
-            if (loginStatusString.contains("JSESSIONID")) {
-                loginStatus = true;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            loginStatus = false;
+            process = CarbonCommandToolsUtil.runScript(
+                    carbonHome + File.separator + "bin", cmdArrayToRecreateDB);
+        } else {
+            cmdArrayToRecreateDB =
+                    new String[]{"sh", "wso2server.sh", "-Dsetup", "-DportOffset=1"};
+            process = CarbonCommandToolsUtil.runScript(carbonHome + "/bin", cmdArrayToRecreateDB);
         }
-        Assert.assertFalse(loginStatus, "Unsuccessful login");
+        boolean startupStatus = CarbonCommandToolsUtil.isServerStartedUp(context, portOffset);
+        log.info("Server startup status : " + startupStatus);
+
+        boolean fileCreated = CarbonCommandToolsUtil.waitForFileCreation(carbonHome + File.separator +
+                              "repository" + File.separator + "database" + File.separator + "DsetupCommandTEST_DB.h2.db");
+        Assert.assertTrue(fileCreated, "Java file not created successfully");
+        String loginStatusString = authenticatorClient.login
+                ("admin", "admin", context.getInstance().getHosts().get("default"));
+        assertTrue(loginStatusString.contains("JSESSIONID"), "Unsuccessful login");
+
+
     }
+
 
     @AfterClass(alwaysRun = true)
     public void cleanResources() throws Exception {
@@ -101,6 +100,4 @@ public class DsetupCommandTestCase extends ASIntegrationTest {
             }
         });
     }
-
-
 }

@@ -37,7 +37,7 @@ public class CarbonCommandToolsUtil {
      * @param cmdArray       - Command array to be executed.
      * @param expectedString - Expected string in  the log.
      * @return boolean - true : Found the expected string , false : not found the expected string.
-     * @throws java.io.IOException - Error while getting the command directory
+     * @throws IOException - Error while getting the command directory
      */
     public static boolean isScriptRunSuccessfully(String directory, String[] cmdArray,
                                                   String expectedString) throws IOException {
@@ -92,7 +92,7 @@ public class CarbonCommandToolsUtil {
      * @param directory - Directory which has the file to be executed .
      * @param cmdArray  - Command array to be executed
      * @return Process - executed process
-     * @throws java.io.IOException - Error while getting the execution directory
+     * @throws IOException - Error while getting the execution directory
      */
     public static Process runScript(String directory, String[] cmdArray)
             throws IOException {
@@ -118,9 +118,9 @@ public class CarbonCommandToolsUtil {
      * @param stringArrayToFind
      * @param cookie - cookie
      * @return -  if found all the  string in one line: true else false
-     * @throws java.rmi.RemoteException
-     * @throws LogViewerLogViewerException
-     * @throws InterruptedException
+     * @throws RemoteException - Error when initializing the log
+     * @throws LogViewerLogViewerException - Error while reading the log
+     * @throws InterruptedException - Error occurred when thread sleep
      */
     public static boolean findMultipleStringsInLog(String backEndUrl, String[] stringArrayToFind,
                                                    String cookie)
@@ -132,7 +132,7 @@ public class CarbonCommandToolsUtil {
         while ((System.currentTimeMillis() - startTime) < TIMEOUT) {
             LogEvent[] logs = logViewerClient.getAllRemoteSystemLogs();
             for (LogEvent item : logs) {
-                String message = (String) item.getMessage();
+                String message = item.getMessage();
                 for (String stringToFind : stringArrayToFind) {
                     if (message.contains(stringToFind)) {
                         expectedStringFound = true;
@@ -161,18 +161,20 @@ public class CarbonCommandToolsUtil {
      *
      * @param automationContext - AutomationContext
      * @return true: If server is up else false
-     * @throws java.io.IOException                           - Error while waiting for login
-     * @throws org.wso2.carbon.authenticator.stub.LoginAuthenticationExceptionException - Authentication error when try to login
-     * @throws javax.xml.xpath.XPathExpressionException              - Error while getting data from automation.xml
+     * @throws IOException                           - Error while waiting for login
+     * @throws LoginAuthenticationExceptionException - Authentication error when try to login
+     * @throws XPathExpressionException              - Error while getting data from automation.xml
      */
     public static boolean isServerStartedUp(AutomationContext automationContext, int portOffset)
             throws IOException, LoginAuthenticationExceptionException, XPathExpressionException {
 
+        //Waiting util a port is open, If couldn't open within given time this will throw an Exception
         ClientConnectionUtil.waitForPort(
                 Integer.parseInt(FrameworkConstants.SERVER_DEFAULT_HTTPS_PORT) + portOffset,
                 DEFAULT_START_STOP_WAIT_MS, false, automationContext.getInstance().getHosts().get("default"));
 
-        ClientConnectionUtil.waitForLogin(automationContext);//TODO comment
+        //Waiting util login to the the server this will throw LoginAuthenticationExceptionException if fails
+        ClientConnectionUtil.waitForLogin(automationContext);
         log.info("Server started successfully.");
         return true;
     }
@@ -183,8 +185,7 @@ public class CarbonCommandToolsUtil {
      * @param automationContext - AutomationContext
      * @return true: If server is down else false
      */
-    public static synchronized boolean isServerDown(AutomationContext automationContext,
-                                                    int portOffset)
+    public static synchronized boolean isServerDown(AutomationContext automationContext,int portOffset)
             throws XPathExpressionException {
         boolean isServerShutDown = false;
         try {
