@@ -19,7 +19,6 @@ package org.wso2.appserver.integration.tests.ciphertool;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.testng.SkipException;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -49,7 +48,7 @@ import static org.testng.Assert.assertTrue;
 /**
  * This class test H2DB password encryption by doing the following steps.
  * Configure the cipher-text.properties.
- * Run the ciphertool.sh using /usr/bin/expect and give a password to encrypt.
+ * Run the ciphertool.sh and give a password to encrypt.
  * And check the master-datasources.xml has encrypted password.
  */
 public class H2DBPasswordEncryptionTestCase extends ASIntegrationTest {
@@ -67,10 +66,6 @@ public class H2DBPasswordEncryptionTestCase extends ASIntegrationTest {
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
-        File createdFile = new File("/usr/bin/expect");
-        if(!createdFile.isFile()){
-            throw new SkipException("Skipping tests because /usr/bin/expect was not available.");
-        }
         super.init();
         serverPropertyMap.put("-DportOffset", "1");
         autoCtx = new AutomationContext();
@@ -97,7 +92,7 @@ public class H2DBPasswordEncryptionTestCase extends ASIntegrationTest {
 
     @Test(groups = {"wso2.as"}, description = "Test the password before encryption")
     public void testCheckBeforeEncrypt() throws Exception {
-        boolean passwordBeforeEncryption = PasswordEncryptionUtil.isPasswordEncrypted(CARBON_HOME);
+        boolean passwordBeforeEncryption = PasswordEncryptionUtil.checkIsPasswordEncrypted(CARBON_HOME);
         assertFalse(passwordBeforeEncryption, "Password has already encrypted");
     }
 
@@ -113,14 +108,14 @@ public class H2DBPasswordEncryptionTestCase extends ASIntegrationTest {
 
         File targetRunFile = new File(CARBON_HOME + File.separator + "bin" + File.separator + "run.sh");
         serverManager.applyConfigurationWithoutRestart(sourceRunFile, targetRunFile, false);
-        boolean isScriptSuccess = PasswordEncryptionUtil.runCipherToolScriptAndCheckStatus(CARBON_HOME, cmdArray);
+        boolean isScriptSuccess = PasswordEncryptionUtil.runCipherToolScript(CARBON_HOME, cmdArray);
         assertTrue(isScriptSuccess, "H2DB Password Encryption failed");
     }
 
     @Test(groups = {"wso2.as"}, description = "H2DB Password Encryption Test",
           dependsOnMethods = {"testCheckScriptRunSuccessfully"})
     public void testCheckEncryptedPassword() throws Exception {
-        boolean passwordAfterEncryption = PasswordEncryptionUtil.isPasswordEncrypted(CARBON_HOME);
+        boolean passwordAfterEncryption = PasswordEncryptionUtil.checkIsPasswordEncrypted(CARBON_HOME);
         assertTrue(passwordAfterEncryption, "H2DB Password Encryption failed");
     }
 

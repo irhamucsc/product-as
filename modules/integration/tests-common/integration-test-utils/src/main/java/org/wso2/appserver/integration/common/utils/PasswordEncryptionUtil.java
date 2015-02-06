@@ -22,11 +22,14 @@ import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.BufferedReader;
 import java.io.File;
@@ -45,18 +48,24 @@ public class PasswordEncryptionUtil {
     private static final Log log = LogFactory.getLog(PasswordEncryptionUtil.class);
 
     /**
-     * By checking the master-datasources.xml password node has encrypted attribute
      *
+     * @param carbonHome - Carbon home
      * @return boolean - true : if password has encrypted ,false : if not
-     * @throws Exception - Error when getting and reading master-datasources.xml
+     * @throws IOException - Error while passing the file to create xml Document
+     * @throws ParserConfigurationException - Error when creating Document for master-datasources.xml
+     * @throws XPathExpressionException - Error while creating NodeList
+     * @throws SAXException - Error when creating Document from master-datasources.xml
      */
-    public static boolean isPasswordEncrypted(String carbonHome) throws Exception {
+    public static boolean checkIsPasswordEncrypted(String carbonHome)
+            throws IOException, ParserConfigurationException, XPathExpressionException,
+                   SAXException {
         boolean foundEncryption = false;
         try {
             FileInputStream file =
                     new FileInputStream(new File(carbonHome + File.separator + "repository" +
                                                  File.separator + "conf" + File.separator + "datasources" +
                                                  File.separator + "master-datasources.xml"));
+
 
             DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = builderFactory.newDocumentBuilder();
@@ -65,19 +74,28 @@ public class PasswordEncryptionUtil {
             String expression = "datasources-configuration/datasources/datasource/definition" +
                                 "[@type='RDBMS']/configuration/password";
 
-            NodeList nodeList = (
-                    NodeList) xPath.compile(expression).evaluate(xmlDocument, XPathConstants.NODESET);
+            NodeList nodeList = (NodeList)
+                    xPath.compile(expression).evaluate(xmlDocument, XPathConstants.NODESET);
 
             for (int i = 0; i < nodeList.getLength(); i++) {
                 Element eElement = (Element) nodeList.item(i);
-                if (eElement.getAttribute("svns:secretAlias").equals("Datasources.WSO2_CARBON_DB.Configuration.Password")
+                if (eElement.getAttribute("svns:secretAlias").
+                        equals("Datasources.WSO2_CARBON_DB.Configuration.Password")
                     && nodeList.item(i).getFirstChild().getNodeValue().equals("password")) {
                     foundEncryption = true;
                     break;
                 }
             }
-        } catch (Exception e) {
-            handleException("Error when passing the master-datasources.xml file to create xmlDocument", e);
+        }catch (SAXException ex) {
+            log.error("Error when creating Document from master-datasources.xml "
+                      + ex.getMessage(), ex);
+            throw new SAXException("Error when creating Document from master-datasources.xml "
+                                   + ex.getMessage(),ex);
+        } catch (IOException ex) {
+            log.error("Error when passing master-datasources.xml to create xml Document "
+                      + ex.getMessage(), ex);
+            throw new IOException("Error when passing master-datasources.xml to create xml Document "
+                                  + ex.getMessage(),ex);
         }
         return foundEncryption;
     }
@@ -90,7 +108,7 @@ public class PasswordEncryptionUtil {
      * @return - boolean shell script ran successfully or not
      * @throws IOException - Error when reading the InputStream when running shell script
      */
-    public static boolean runCipherToolScriptAndCheckStatus(String carbonHome, String[] cmdArray)
+    public static boolean runCipherToolScript(String carbonHome, String[] cmdArray)
             throws IOException {
         boolean foundTheMessage = false;
         InputStream is = null;
@@ -100,7 +118,7 @@ public class PasswordEncryptionUtil {
         try {
             log.info("Running the ciphertool.sh ..");
 
-            File commandDir = new File(carbonHome + "/bin");
+            File commandDir = new File(carbonHome + File.separator + "bin");
             ProcessBuilder processBuilder = new ProcessBuilder(cmdArray);
             processBuilder.directory(commandDir);
             process = processBuilder.start();
@@ -115,9 +133,6 @@ public class PasswordEncryptionUtil {
                 }
             }
             return foundTheMessage;
-        } catch (IOException ex) {
-            log.error("Error when reading the InputStream when running shell script ", ex);
-            throw new IOException("Error when reading the InputStream when running shell script ", ex);
         } finally {
             if (is != null) {
                 is.close();
@@ -132,12 +147,6 @@ public class PasswordEncryptionUtil {
                 process.destroy();
             }
         }
-    }
-
-
-    private static void handleException(String msg, Exception e) throws Exception {
-        log.error(msg, e);
-        throw new Exception(msg, e);
     }
 
 }
