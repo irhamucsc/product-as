@@ -29,7 +29,7 @@ public class RunBuildXMLTestCase extends ASIntegrationTest {
         context = new AutomationContext("AS", "appServerInstance0002",
                                         ContextXpathConstants.SUPER_TENANT,
                                         ContextXpathConstants.ADMIN);
-        carbonHome= CarbonToolsUtil.getCarbonHome(context);
+        carbonHome = CarbonToolsUtil.getCarbonHome(context);
     }
 
     @Test(groups = {"wso2.as"}, description = "Server restart test")
@@ -40,9 +40,9 @@ public class RunBuildXMLTestCase extends ASIntegrationTest {
 
             File folder = new File(carbonHome + File.separator + "repository" + File.separator + "lib");
             File[] listOfFilesBeforeRunAntCommand = folder.listFiles();
-            process = CarbonCommandToolsUtil.runScript(carbonHome + "/bin", new String[]{"ant"});
+            process = CarbonCommandToolsUtil.runScript(carbonHome + File.separator + "bin", new String[]{"ant"});
             long startTime = System.currentTimeMillis();
-            long timeout = 2000;
+            long timeout = 10000;
             while ((System.currentTimeMillis() - startTime) < timeout) {
                 File[] listOfFilesAfterRunAntCommand = folder.listFiles();
                 if (listOfFilesAfterRunAntCommand.length > listOfFilesBeforeRunAntCommand.length) {
@@ -51,7 +51,7 @@ public class RunBuildXMLTestCase extends ASIntegrationTest {
                     break;
                 }
             }
-        }finally {
+        } finally {
             if (process != null) {
                 process.destroy();
             }
@@ -65,7 +65,7 @@ public class RunBuildXMLTestCase extends ASIntegrationTest {
         boolean isJarCreated = false;
         Process process = null;
         try {
-            process = CarbonCommandToolsUtil.runScript(carbonHome + "bin",
+            process = CarbonCommandToolsUtil.runScript(carbonHome + File.separator + "bin",
                                                        new String[]{"ant", "localize"});
             File folder = new File(carbonHome + File.separator + "repository" + File.separator +
                                    "components" + File.separator + "dropins");

@@ -45,7 +45,7 @@ public class ChangeUserPasswordH2DBTestCase extends ASIntegrationTest {
     private TestServerManager testServerManager;
     private AuthenticatorClient authenticatorClient;
     private boolean scriptRunStatus;
-    private AutomationContext context ;
+    private AutomationContext context;
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
@@ -78,14 +78,14 @@ public class ChangeUserPasswordH2DBTestCase extends ASIntegrationTest {
                     cmdArray = new String[]
                             {"sh", "chpasswd.sh", "--db-url", "jdbc:h2:" + testServerManager.getCarbonHome() +
                              ASIntegrationConstants.H2DB_DB_URL, "--db-driver", "org.h2.Driver",
-                             "--db-username","wso2carbon","--db-password", "wso2carbon", "--username",
+                             "--db-username", "wso2carbon", "--db-password", "wso2carbon", "--username",
                              "testu1", "--new-password", "testu123"};
                     commandDirectory = testServerManager.getCarbonHome() + "/bin";
                 }
 
                 scriptRunStatus =
                         CarbonCommandToolsUtil.isScriptRunSuccessfully(commandDirectory, cmdArray,
-                                                                "Password updated successfully");
+                                                                       "Password updated successfully");
                 log.info("Script running status : " + scriptRunStatus);
                 assertTrue(scriptRunStatus, "Script executed successfully");
             }
@@ -97,10 +97,9 @@ public class ChangeUserPasswordH2DBTestCase extends ASIntegrationTest {
 
     @Test(groups = "wso2.as", description = "H2DB password change test", dependsOnMethods = {"testScriptRun"})
     public void test() throws Exception {
-        String loginStatusString = null;
-            loginStatusString = authenticatorClient.login
-                    ("testu1", "testu123", context.getInstance().getHosts().get("default"));
-            assertTrue(loginStatusString.contains("JSESSIONID"), "Unsuccessful login");
+        String loginStatusString = authenticatorClient.login
+                ("testu1", "testu123", context.getInstance().getHosts().get("default"));
+        assertTrue(loginStatusString.contains("JSESSIONID"), "Unsuccessful login");
 
     }
 

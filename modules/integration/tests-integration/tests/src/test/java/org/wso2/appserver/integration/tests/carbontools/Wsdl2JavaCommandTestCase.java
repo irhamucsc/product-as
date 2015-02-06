@@ -7,7 +7,6 @@ import org.testng.SkipException;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.appserver.integration.common.clients.AARServiceUploaderClient;
 import org.wso2.appserver.integration.common.utils.ASIntegrationTest;
 import org.wso2.appserver.integration.common.utils.CarbonCommandToolsUtil;
 import org.wso2.carbon.automation.engine.annotations.ExecutionEnvironment;
@@ -30,17 +29,6 @@ public class Wsdl2JavaCommandTestCase extends ASIntegrationTest {
     public void testDeployService()
             throws Exception {
         super.init();
-        AARServiceUploaderClient aarServiceUploaderClient
-                = new AARServiceUploaderClient(backendURL, sessionCookie);
-
-//        aarServiceUploaderClient.
-//                uploadAARFile("HelloWorld.aar", FrameworkPathUtil.getSystemResourceLocation() + "artifacts" +
-//                               File.separator + "AS" + File.separator + "aar" + File.separator +
-//                               "HelloWorld.aar", "");
-//
-//        String axis2Service = "HelloService";
-//        isServiceDeployed(axis2Service);
-
         log.info("Axis2Service.aar service uploaded successfully");
 
     }
@@ -58,7 +46,7 @@ public class Wsdl2JavaCommandTestCase extends ASIntegrationTest {
             String[] cmdArrayToWsdl2Java;
             if (CarbonCommandToolsUtil.isCurrentOSWindows()) {
                 throw new SkipException("Issue with wsdl2java.bat");
-                //https://wso2.org/jira/browse/CARBON-15151
+//                https://wso2.org/jira/browse/CARBON-15151
 //                cmdArrayToWsdl2Java =
 //                        new String[]{"cmd.exe", "/c", "wsdl2java.bat", "-uri", serviceUrl};
 //                commandDirectory = System.getProperty(ServerConstants.CARBON_HOME) + File.separator + "bin";
@@ -68,10 +56,10 @@ public class Wsdl2JavaCommandTestCase extends ASIntegrationTest {
                 commandDirectory = System.getProperty(ServerConstants.CARBON_HOME) + "/bin";
             }
             process = CarbonCommandToolsUtil.runScript(commandDirectory, cmdArrayToWsdl2Java);
+
             fileCreated = CarbonCommandToolsUtil.waitForFileCreation(
                     System.getProperty(ServerConstants.CARBON_HOME) + File.separator + "bin" +
                     File.separator + "src/org/wso2/www/types/HelloServiceStub.java");
-
         } finally {
             if (process != null) {
                 process.destroy();

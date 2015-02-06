@@ -29,10 +29,10 @@ public class DsetupCommandTestCase extends ASIntegrationTest {
     private AuthenticatorClient authenticatorClient;
     private ServerConfigurationManager serverManager;
 
-    private String carbonHome = null;
-    private AutomationContext context = null;
+    private String carbonHome;
+    private AutomationContext context;
     private int portOffset = 1;
-    private Process process = null;
+    private Process process;
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
@@ -78,7 +78,9 @@ public class DsetupCommandTestCase extends ASIntegrationTest {
         log.info("Server startup status : " + startupStatus);
 
         boolean fileCreated = CarbonCommandToolsUtil.waitForFileCreation(carbonHome + File.separator +
-                              "repository" + File.separator + "database" + File.separator + "DsetupCommandTEST_DB.h2.db");
+                                                                         "repository" + File.separator + "database" + File.separator +
+                                                                         "DsetupCommandTEST_DB.h2.db");
+
         Assert.assertTrue(fileCreated, "Java file not created successfully");
         String loginStatusString = authenticatorClient.login
                 ("admin", "admin", context.getInstance().getHosts().get("default"));
@@ -90,6 +92,6 @@ public class DsetupCommandTestCase extends ASIntegrationTest {
 
     @AfterClass(alwaysRun = true)
     public void cleanResources() throws Exception {
-                    CarbonToolsUtil.serverShutdown(process, 1, context);
+        CarbonToolsUtil.serverShutdown(process, 1, context);
     }
 }

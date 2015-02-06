@@ -39,14 +39,14 @@ public class CleanRegistryCommandTestCase extends ASIntegrationTest {
     private static final Log log = LogFactory.getLog(CarbonServerBasicOperationTestCase.class);
     private HashMap<String, String> serverPropertyMap = new HashMap<String, String>();
     private MultipleServersManager manager = new MultipleServersManager();
-    private String carbonHome = null;
-    private AutomationContext autoCtx = null;
-    private AutomationContext context = null;
+    private String carbonHome;
+    private AutomationContext autoCtx;
+    private AutomationContext context;
     String sessionCookieForInstance002;
     String backendURLForInstance002;
     LoginLogoutClient loginLogoutClientForInstance002;
     private int portOffset = 1;
-    private Process process = null;
+    private Process process;
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
@@ -118,7 +118,7 @@ public class CleanRegistryCommandTestCase extends ASIntegrationTest {
 
     @AfterClass(alwaysRun = true)
     public void cleanResources() throws Exception {
-       CarbonToolsUtil.serverShutdown(process, 1, context);
+        CarbonToolsUtil.serverShutdown(process, 1, context);
     }
 
 }

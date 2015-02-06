@@ -48,7 +48,7 @@ public class CarbonServerBasicOperationTestCase extends ASIntegrationTest {
     private AutomationContext context;
     private final int portOffset = 1;
     private String processId;
-    Process processStop = null;
+    Process processStop ;
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
@@ -86,9 +86,12 @@ public class CarbonServerBasicOperationTestCase extends ASIntegrationTest {
         Process processDump;
         boolean isFoundDumpFolder = false;
         if (CarbonCommandToolsUtil.isCurrentOSWindows()) {
-            cmdArray = new String[]{"cmd.exe", "/c", "carbondump.bat", "-carbonHome",
-                                    System.getProperty(ServerConstants.CARBON_HOME), "-pid", processId};
-            processDump = CarbonCommandToolsUtil.runScript(System.getProperty(ServerConstants.CARBON_HOME) + File.separator + "bin", cmdArray);
+            cmdArray = new String[]
+                    {"cmd.exe", "/c", "carbondump.bat", "-carbonHome",
+                     System.getProperty(ServerConstants.CARBON_HOME), "-pid", processId};
+
+            processDump = CarbonCommandToolsUtil.runScript(
+                    System.getProperty(ServerConstants.CARBON_HOME) + File.separator + "bin", cmdArray);
         } else {
             cmdArray = new String[]
                     {"sh", "carbondump.sh", "-carbonHome", carbonHome, "-pid", processId};

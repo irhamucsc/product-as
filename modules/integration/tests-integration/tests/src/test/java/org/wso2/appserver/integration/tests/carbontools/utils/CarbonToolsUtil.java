@@ -38,7 +38,7 @@ import java.lang.reflect.Field;
 
 /**
  * This class has the utility methods to carbon tools test cases.
-*/
+ */
 
 public class CarbonToolsUtil {
 
@@ -65,7 +65,8 @@ public class CarbonToolsUtil {
         return CARBON_HOME;
     }
 
-    public static void serverShutdown(Process process,int portOffset,AutomationContext automationContext) throws Exception {
+    public static void serverShutdown(Process process, int portOffset,
+                                      AutomationContext automationContext) throws Exception {
         if (process != null) {
             ServerLogReader inputStreamHandler = new ServerLogReader("inputStream", process.getInputStream());
             // start the stream readers
@@ -73,6 +74,7 @@ public class CarbonToolsUtil {
             log.info("Shutting down server..");
             if (ClientConnectionUtil.isPortOpen(Integer.parseInt(ExtensionCommonConstants.
                 SERVER_DEFAULT_HTTPS_PORT) + portOffset, automationContext.getInstance().getHosts().get("default"))) {
+
                 int httpsPort = Integer.parseInt(FrameworkConstants.SERVER_DEFAULT_HTTPS_PORT) + portOffset;
                 String url = automationContext.getContextUrls().getBackEndUrl();
                 String backendURL = url.replaceAll("(:\\d+)", ":" + httpsPort);

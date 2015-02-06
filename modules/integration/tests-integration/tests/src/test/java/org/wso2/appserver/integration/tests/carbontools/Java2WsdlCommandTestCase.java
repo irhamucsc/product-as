@@ -62,12 +62,10 @@ public class Java2WsdlCommandTestCase extends ASIntegrationTest {
 
         } else {
             //if file, then copy it
-            //Use bytes stream to support all file types
             InputStream in = new FileInputStream(src);
             OutputStream out = new FileOutputStream(dest);
             byte[] buffer = new byte[1024];
             int length;
-            //copy the file content in bytes
             while ((length = in.read(buffer)) > 0) {
                 out.write(buffer, 0, length);
             }
@@ -83,7 +81,7 @@ public class Java2WsdlCommandTestCase extends ASIntegrationTest {
         String commandDirectory;
         if (CarbonCommandToolsUtil.isCurrentOSWindows()) {
             throw new SkipException("Issue with wsdl2java.bat");
-            //https://wso2.org/jira/browse/CARBON-15150
+//            https://wso2.org/jira/browse/CARBON-15150
 //            cmdArrayToWsdl2Java =
 //                    new String[]{"cmd.exe", "/c", "start", "java2wsdl.bat", "-cn", "testjava2wsdl.Java2Wsdl"};
 //            commandDirectory = System.getProperty(ServerConstants.CARBON_HOME) + File.separator + "bin";
