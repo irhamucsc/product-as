@@ -15,6 +15,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.wso2.appserver.integration.tests.carbontools;
 
 import org.apache.commons.logging.Log;
@@ -66,7 +67,6 @@ public class ChangeUserPasswordH2DBTestCase extends ASIntegrationTest {
                 testServerManager.stopServer();
                 String[] cmdArray;
                 String commandDirectory;
-
                 if (CarbonCommandToolsUtil.isCurrentOSWindows()) {
                     cmdArray = new String[]
                             {"cmd.exe", "/c", "chpasswd.bat", "--db-url", "jdbc:h2:" +
@@ -96,7 +96,7 @@ public class ChangeUserPasswordH2DBTestCase extends ASIntegrationTest {
     }
 
     @Test(groups = "wso2.as", description = "H2DB password change test", dependsOnMethods = {"testScriptRun"})
-    public void test() throws Exception {
+    public void testUserPasswordOnH2DBChanged() throws Exception {
         String loginStatusString = authenticatorClient.login
                 ("testu1", "testu123", context.getInstance().getHosts().get("default"));
         assertTrue(loginStatusString.contains("JSESSIONID"), "Unsuccessful login");
@@ -110,3 +110,4 @@ public class ChangeUserPasswordH2DBTestCase extends ASIntegrationTest {
 
 
 }
+

@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2014, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.wso2.appserver.integration.tests.carbontools;
 
 import org.apache.commons.logging.Log;
@@ -9,7 +27,7 @@ import org.testng.annotations.Test;
 import org.wso2.appserver.integration.common.clients.ResourceAdminServiceClient;
 import org.wso2.appserver.integration.common.utils.ASIntegrationTest;
 import org.wso2.appserver.integration.common.utils.CarbonCommandToolsUtil;
-import org.wso2.appserver.integration.tests.carbontools.utils.CarbonToolsUtil;
+import org.wso2.appserver.integration.tests.carbontools.utils.CarbonToolsCommandUtil;
 import org.wso2.carbon.authenticator.stub.LoginAuthenticationExceptionException;
 import org.wso2.carbon.automation.engine.context.AutomationContext;
 import org.wso2.carbon.automation.engine.context.ContextXpathConstants;
@@ -36,7 +54,7 @@ public class CleanRegistryCommandTestCase extends ASIntegrationTest {
     private ResourceAdminServiceClient resourceAdminServiceClient;
     private static final String RESOURCE_PATH_NAME = "/_system/config/repository/";
 
-    private static final Log log = LogFactory.getLog(CarbonServerBasicOperationTestCase.class);
+    private static final Log log = LogFactory.getLog(CleanRegistryCommandTestCase.class);
     private HashMap<String, String> serverPropertyMap = new HashMap<String, String>();
     private MultipleServersManager manager = new MultipleServersManager();
     private String carbonHome;
@@ -50,16 +68,17 @@ public class CleanRegistryCommandTestCase extends ASIntegrationTest {
 
     @BeforeClass(alwaysRun = true)
     public void init() throws Exception {
-        serverPropertyMap.put("-DportOffset", "1");
+        serverPropertyMap.put("-DportOffset",Integer.toString(portOffset));
         autoCtx = new AutomationContext();
         CarbonTestServerManager server =
                 new CarbonTestServerManager(autoCtx, System.getProperty("carbon.zip"), serverPropertyMap);
         manager.startServers(server);
         carbonHome = server.getCarbonHome();
-        context = new AutomationContext("AS", "appServerInstance0002",
-                                        ContextXpathConstants.SUPER_TENANT,
+
+        context = new AutomationContext("AS", "appServerInstance0002", ContextXpathConstants.SUPER_TENANT,
                                         ContextXpathConstants.ADMIN);
         create();
+
         resourceAdminServiceClient =
                 new ResourceAdminServiceClient(backendURLForInstance002, sessionCookieForInstance002);
 
@@ -68,10 +87,10 @@ public class CleanRegistryCommandTestCase extends ASIntegrationTest {
     @Test(groups = "wso2.greg", description = "Add resource")
     public void testCleanResource() throws Exception {
         boolean isResourceFound;
-
         String resourcePath = FrameworkPathUtil.getSystemResourceLocation() + "artifacts" +
                               File.separator + "AS" + File.separator + "carbontools" +
                               File.separator + "resource.txt";
+
         DataHandler dh = new DataHandler(new URL("file:///" + resourcePath));
         resourceAdminServiceClient.addResource(RESOURCE_PATH_NAME + "resource.txt", "txt", "testDesc", dh);
         isResourceFound = true;
@@ -79,15 +98,14 @@ public class CleanRegistryCommandTestCase extends ASIntegrationTest {
         String[] cmdArrayToCleanRegistry;
         try {
             if (CarbonCommandToolsUtil.isCurrentOSWindows()) {
-                cmdArrayToCleanRegistry = new String[]
-                        {"cmd.exe", "/c", "start", "wso2server.bat", "--cleanRegistry", "-DportOffset=1"};
-
-                process = CarbonCommandToolsUtil.runScript(
-                        carbonHome + File.separator + "bin", cmdArrayToCleanRegistry);
+                cmdArrayToCleanRegistry = new String[]{"--cleanRegistry"};
+                process = CarbonToolsCommandUtil.startServerUsingCarbonHome(carbonHome, portOffset, context,
+                                                                            cmdArrayToCleanRegistry);
             } else {
                 cmdArrayToCleanRegistry =
-                        new String[]{"sh", "wso2server.sh", "-DportOffset=1", "--cleanRegistry"};
-                process = CarbonCommandToolsUtil.runScript(carbonHome + "/bin", cmdArrayToCleanRegistry);
+                        new String[]{"--cleanRegistry"};
+                process = CarbonToolsCommandUtil.startServerUsingCarbonHome(carbonHome, portOffset, context,
+                                                                            cmdArrayToCleanRegistry);
             }
 
             boolean startupStatus = CarbonCommandToolsUtil.isServerStartedUp(context, portOffset);
@@ -118,7 +136,7 @@ public class CleanRegistryCommandTestCase extends ASIntegrationTest {
 
     @AfterClass(alwaysRun = true)
     public void cleanResources() throws Exception {
-        CarbonToolsUtil.serverShutdown(process, 1, context);
+        CarbonToolsCommandUtil.serverShutdown(portOffset, context);
     }
 
 }
